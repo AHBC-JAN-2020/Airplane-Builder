@@ -64,7 +64,7 @@ namespace PlaneBuilder.Controllers
             model.Code = Request.Form["airport"];
             var tsaWaitTime = await _airportClient.GetAirport(model.Code);
             travel.Code = model.Code;
-            travel.TSAWaitTime = tsaWaitTime.rightnow / 60;
+            travel.TSAWaitTime = tsaWaitTime.rightnow;
             string hourMin = time.Substring(0, 5);
             time = DateTime.Parse(hourMin).ToString("h:mm tt");
             model.Time = Convert.ToDateTime(time);
@@ -75,22 +75,22 @@ namespace PlaneBuilder.Controllers
             request.Destination = new Location(model.Code);
             var response = GoogleApi.GoogleMaps.Directions.Query(request);
 
-            double duration = response.Routes.First().Legs.First().Duration.Value / 3600D;
+            double duration = response.Routes.First().Legs.First().Duration.Value / 60D;
             travel.TotalTravelTime = duration + travel.TSAWaitTime;
 
-            TimeSpan tt = TimeSpan.FromHours((duration));
+            TimeSpan tt = TimeSpan.FromMinutes((duration));
             travel.DriveTime = tt.Hours.ToString("00") + " hours" + " and" + tt.Minutes.ToString(" 00") + " minutes";
 
             if (model.ArriveBy)
             {
                 DateTime arriveByTime = model.Time;
-                DateTime updatedTime = arriveByTime.AddHours(-(travel.TotalTravelTime));
+                DateTime updatedTime = arriveByTime.AddMinutes(-(travel.TotalTravelTime));
                 travel.LeaveTime = updatedTime.ToString("h:mm tt");
             }
             else
             {
                 DateTime arriveByTime = model.Time;
-                DateTime updatedTime = arriveByTime.AddHours((travel.TotalTravelTime));
+                DateTime updatedTime = arriveByTime.AddMinutes((travel.TotalTravelTime));
                 travel.LeaveTime = updatedTime.ToString("h:mm tt");
             }
 
